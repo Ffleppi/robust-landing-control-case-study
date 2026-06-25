@@ -4,6 +4,11 @@ This is a sanitized portfolio case study based on a university control project.
 Course materials, simulator code, assignment files, notebooks, validation scripts,
 and runnable submission code are intentionally omitted.
 
+The repository includes a small reference implementation of the controller
+architecture. It is a rewritten, non-runnable reconstruction for explanation
+only, not the submitted controller and not compatible with the original
+simulator.
+
 ## Problem
 
 The task was to design a landing controller for a simulated rocket descending
@@ -25,6 +30,11 @@ The final design used a hybrid control architecture:
   touchdown behavior.
 
 ![Sanitized controller architecture](assets/architecture_sanitized.png)
+
+For a code-level explanation, see:
+
+- [`src/hybrid_landing_controller_reference.py`](src/hybrid_landing_controller_reference.py)
+- [`docs/control_formulation.md`](docs/control_formulation.md)
 
 ## Representative Result
 
@@ -49,7 +59,6 @@ parameters or solution code.
 
 - This was a simulator project, not a flight-certified control system.
 - The public version omits the simulator, assignment, exact validation cases,
-  controller constants, and runnable code.
+  controller constants, submitted controller, and runnable code.
 - The reported behavior should be understood as evidence from a controlled
   simulation study, not as a formal guarantee for a physical vehicle.
-
