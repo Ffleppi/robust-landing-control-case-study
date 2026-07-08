@@ -29,6 +29,12 @@ The final design used a hybrid control architecture:
 
 ![Sanitized controller architecture](assets/architecture_sanitized.png)
 
+The controller is structured as a hybrid supervisor. Large off-nominal states
+are first handled by a recovery mode. Once the vehicle enters the local landing
+corridor, robust MPC is used over a finite model set, with an LQR correction
+around the planned input. Close to touchdown, the controller switches to a
+terminal mode with braking and contact-settle logic.
+
 ## Representative Result
 
 In representative malfunction cases, the baseline controller drifted away from the target, while the hybrid controller recovered into the landing region. The plot below is anonymized and non-reproducible; it is intended to communicate the engineering result without exposing assignment-specific parameters or solution code.
