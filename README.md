@@ -76,7 +76,6 @@ docs/control_formulation.md
 - Simulation-based controller evaluation
 - Python implementation of control architecture
 - Safety-oriented controller design
-- Clear separation between public documentation and private course material
 
 ## Repository Structure
 
