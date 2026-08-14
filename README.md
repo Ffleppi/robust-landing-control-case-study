@@ -41,6 +41,16 @@ In representative malfunction cases, the baseline controller drifted away from t
 
 ![Anonymized before/after result](assets/before_after_sanitized.png)
 
+## Evaluation Outcome
+
+In the final project evaluation, the submitted controller received full credit
+on the controller benchmark: all three withheld malfunction scenarios were
+classified as successful two-leg landings. The supporting notebook also executed
+successfully in about 8.3 seconds.
+
+This is empirical validation on the project benchmark, not a formal guarantee of
+global robustness for all nonlinear landing states.
+
 ## What I Implemented
 
 The public reference implementation is here:
