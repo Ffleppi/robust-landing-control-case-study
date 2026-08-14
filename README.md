@@ -43,10 +43,11 @@ In representative malfunction cases, the baseline controller drifted away from t
 
 ## Evaluation Outcome
 
-In the final project evaluation, the submitted controller received full credit
-on the controller benchmark: all three withheld malfunction scenarios were
-classified as successful two-leg landings. The supporting notebook also executed
-successfully in about 8.3 seconds.
+In the final project evaluation across 191 student submissions, the controller
+received full benchmark credit: all three withheld malfunction scenarios were
+classified as successful two-leg landings. Among the 124 full-credit submissions
+with two-leg landings in all three scenarios, this was the fastest notebook run
+in the published grading data at about 8.3 seconds.
 
 This is empirical validation on the project benchmark, not a formal guarantee of
 global robustness for all nonlinear landing states.
