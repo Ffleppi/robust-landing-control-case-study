@@ -105,17 +105,8 @@ The terminal layer is important because low-altitude contact behavior is not
 well represented by a linear hover model. It prevents early shutdown while the
 vehicle still has too much lateral, vertical, or attitude error.
 
-## What Is Intentionally Omitted
+## Public Scope
 
-The public version does not include:
-
-- exact matrices,
-- exact weighting values,
-- exact actuator limits,
-- exact supervisor thresholds,
-- exact validation cases,
-- simulator imports,
-- the submitted controller file or notebook.
-
-Those details are omitted to avoid redistributing course material or publishing
-a reusable solution.
+Exact matrices, tuning values, actuator limits, supervisor thresholds,
+validation cases, and simulator interfaces are intentionally omitted. See the
+[repository disclosure](../DISCLAIMER.md) for the public/private boundary.

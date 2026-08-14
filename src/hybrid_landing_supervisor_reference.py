@@ -1,10 +1,13 @@
 """Executable, simulator-independent reference for the hybrid supervisor.
 
 This module documents the software boundary around the landing policies without
-reproducing the submitted controller. Recovery, predictive control, and
-terminal control are injected behind small interfaces. The public code owns
-only mode selection, hysteresis, touchdown commitment, fallback behavior, and
-normalized actuator saturation.
+reproducing the submitted controller. Recovery, predictive, terminal, and
+contact-settle control are injected behind small interfaces. The public code
+owns only mode selection, hysteresis, touchdown commitment, fallback behavior,
+and normalized actuator saturation.
+
+The touchdown gate is a generic representation of terminal commitment. Its
+scenario-specific triggering conditions are intentionally omitted.
 
 No course APIs, model matrices, optimizer setup, controller gains, or validation
 scenarios appear here.
@@ -50,12 +53,6 @@ class LandingCommand:
     main: float
     lateral: float
     gimbal: float
-
-    @classmethod
-    def zero(cls) -> LandingCommand:
-        """Return a fully suppressed command for established contact."""
-
-        return cls(main=0.0, lateral=0.0, gimbal=0.0)
 
     def saturated(self) -> LandingCommand:
         """Apply the normalized public actuator contract."""
@@ -115,7 +112,7 @@ class TerminalContext:
 
 
 class ControlPolicy(Protocol):
-    """Interface implemented by recovery and local predictive policies."""
+    """Interface for recovery, local predictive, and contact-settle policies."""
 
     def command(self, state: LandingState) -> LandingCommand:
         """Return one normalized actuator command."""
@@ -142,7 +139,7 @@ class HybridLandingSupervisor:
     Recovery handles states outside the local model region. Consecutive
     eligible samples are required before the local predictive policy receives
     authority. Low-altitude terminal logic has priority over both flight modes,
-    and established contact suppresses all commands.
+    and detected contact hands authority to a constrained settle policy.
 
     A local policy can raise :class:`PolicyUnavailable` to represent solver
     failure or an invalid solution. The supervisor then returns immediately to
@@ -155,11 +152,13 @@ class HybridLandingSupervisor:
         recovery_policy: ControlPolicy,
         local_policy: ControlPolicy,
         terminal_policy: TerminalPolicy,
+        contact_policy: ControlPolicy,
     ) -> None:
         self.config = config
         self.recovery_policy = recovery_policy
         self.local_policy = local_policy
         self.terminal_policy = terminal_policy
+        self.contact_policy = contact_policy
         self.reset()
 
     def reset(self) -> None:
@@ -181,7 +180,7 @@ class HybridLandingSupervisor:
         if state.has_contact:
             self.mode = Mode.CONTACT_SETTLE
             self._eligible_samples = 0
-            return LandingCommand.zero()
+            return self.contact_policy.command(state).saturated()
 
         if self._inside_terminal_region(state):
             self.mode = Mode.TERMINAL

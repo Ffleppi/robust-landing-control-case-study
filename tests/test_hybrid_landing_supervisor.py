@@ -48,6 +48,10 @@ class HybridLandingSupervisorTests(unittest.TestCase):
         self.recovery = ConstantPolicy(LandingCommand(0.4, -0.2, 0.1))
         self.local = ConstantPolicy(LandingCommand(0.5, 0.1, -0.1))
         self.terminal = RecordingTerminalPolicy(LandingCommand(0.3, 0.0, 0.0))
+        self.contact = ConstantPolicy(LandingCommand(0.0, -0.1, 0.1))
+
+        # These values are deliberately illustrative and are not submitted
+        # controller constants.
         self.config = SupervisorConfig(
             local_lateral_error_limit=1.0,
             local_lateral_speed_limit=0.8,
@@ -66,6 +70,7 @@ class HybridLandingSupervisorTests(unittest.TestCase):
             recovery_policy=self.recovery,
             local_policy=self.local,
             terminal_policy=self.terminal,
+            contact_policy=self.contact,
         )
 
     @staticmethod
@@ -111,6 +116,7 @@ class HybridLandingSupervisorTests(unittest.TestCase):
             recovery_policy=self.recovery,
             local_policy=UnavailablePolicy(),
             terminal_policy=self.terminal,
+            contact_policy=self.contact,
         )
 
         supervisor.command(self.state())
@@ -150,32 +156,37 @@ class HybridLandingSupervisorTests(unittest.TestCase):
             [False, True, True],
         )
 
-    def test_contact_suppresses_all_commands(self) -> None:
+    def test_contact_uses_settle_policy(self) -> None:
         result = self.supervisor.command(self.state(has_contact=True))
 
         self.assertEqual(self.supervisor.mode, Mode.CONTACT_SETTLE)
-        self.assertEqual(result, LandingCommand.zero())
+        self.assertEqual(result, self.contact.result)
+        self.assertEqual(self.contact.calls, 1)
 
     def test_policy_commands_are_saturated(self) -> None:
         unbounded = LandingCommand(1.5, -2.0, 3.0)
         recovery = ConstantPolicy(unbounded)
         local = ConstantPolicy(unbounded)
         terminal = RecordingTerminalPolicy(unbounded)
+        contact = ConstantPolicy(unbounded)
         supervisor = HybridLandingSupervisor(
             config=replace(self.config, mpc_entry_hold_steps=1),
             recovery_policy=recovery,
             local_policy=local,
             terminal_policy=terminal,
+            contact_policy=contact,
         )
 
         recovery_result = supervisor.command(self.state(lateral_error=2.0))
         local_result = supervisor.command(self.state())
         terminal_result = supervisor.command(self.state(vertical_error=0.5))
+        contact_result = supervisor.command(self.state(has_contact=True))
 
         expected = LandingCommand(1.0, -1.0, 1.0)
         self.assertEqual(recovery_result, expected)
         self.assertEqual(local_result, expected)
         self.assertEqual(terminal_result, expected)
+        self.assertEqual(contact_result, expected)
 
     def test_reset_clears_mode_hysteresis_and_touchdown_latch(self) -> None:
         self.supervisor.command(

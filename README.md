@@ -15,7 +15,10 @@ intentionally omitted.
 
 ## Problem
 
-The task was to control a simulated rocket descending toward a moving landing target. A nominal baseline controller could handle easier descent cases, but degraded actuator authority and larger initial deviations exposed a lack of robustness.
+The task was to control a simulated rocket descending toward a moving landing
+target. A nominal baseline controller could handle easier descent cases, but
+degraded actuator authority and larger initial deviations exposed a lack of
+robustness.
 
 The main control challenge was to combine:
 
@@ -39,25 +42,18 @@ simulation-based evaluation. The main contributions were:
 
 The final design used a hybrid control architecture:
 
-- **Recovery supervision** outside the local landing corridor, where the linearized model is not reliable.
-- **Robust MPC** inside the local corridor, planning constrained actions over a finite set of plausible actuator-effectiveness models.
-- **Local LQR feedback** around the predictive command, using the structure `u_k = v_k + L x_k`.
-- **Terminal touchdown logic** for low-altitude braking and contact-sensitive behavior.
-- **Contact-settle logic** after touchdown to avoid aggressive lateral or gimbal commands.
+- **Recovery supervision** outside the local landing corridor, where the
+  linearized model is not reliable.
+- **Robust MPC** inside the local corridor, planning constrained actions over a
+  finite set of plausible actuator-effectiveness models.
+- **Local LQR feedback** around the predictive command, using the structure
+  `u_k = v_k + L x_k`.
+- **Terminal touchdown logic** for low-altitude braking and contact-sensitive
+  behavior.
+- **Contact-settle logic** after touchdown to avoid aggressive lateral or
+  gimbal commands.
 
 ![Sanitized controller architecture](assets/architecture_sanitized.png)
-
-The controller is structured as a hybrid supervisor. Large off-nominal states
-are first handled by a recovery mode. Once the vehicle enters the local landing
-corridor, robust MPC is used over a finite model set, with an LQR correction
-around the planned input. Close to touchdown, the controller switches to a
-terminal mode with braking and contact-settle logic.
-
-## Representative Result
-
-In representative malfunction cases, the baseline controller drifted away from the target, while the hybrid controller recovered into the landing region. The plot below is anonymized and non-reproducible; it is intended to communicate the engineering result without exposing assignment-specific parameters or solution code.
-
-![Anonymized before/after result](assets/before_after_sanitized.png)
 
 ## Evaluation
 
@@ -69,23 +65,35 @@ End-to-end evaluation refers to execution of the complete evaluation notebook,
 not an individual MPC solve. This is empirical validation on the project
 benchmark, not a global robustness guarantee for all nonlinear landing states.
 
+## Recorded Controller Output
+
+The plot below shows recorded closed-loop trajectories from the final controller
+under three representative malfunction classes. The shaded region is the deck
+footprint and the markers indicate the final positions. Exact scenario settings
+are omitted, but the curves and physical units come directly from simulator
+output rather than illustrative data.
+
+![Recorded controller trajectories](assets/controller_output.png)
+
 ## Public Architecture Reference
 
 The executable
 [supervisor reference](src/hybrid_landing_supervisor_reference.py) demonstrates
 the software boundary around the controller. It implements:
 
-- mode selection between recovery, local MPC, terminal, and contact-settle behavior,
+- mode selection between recovery, local MPC, terminal, and contact-settle
+  behavior,
 - hysteresis before the local predictive policy receives control authority,
 - fallback when the predictive policy cannot provide a valid command,
-- persistent touchdown commitment and post-contact command suppression,
+- a generic representation of terminal touchdown commitment,
+- handoff to a bounded contact-settle policy,
 - and normalized actuator saturation.
 
-Recovery, MPC/LQR, and terminal policies are injected through generic
-interfaces. The reference therefore tests the hybrid architecture without
-reproducing the course simulator, optimization problem, controller gains, or
-submitted APIs. The actual MPC design is documented separately in the
-[control formulation](docs/control_formulation.md).
+Recovery, MPC/LQR, terminal, and contact-settle policies are injected through
+generic interfaces. The reference therefore tests the hybrid architecture
+without reproducing the course simulator, optimization problem, controller
+gains, or submitted APIs. The sanitized controller formulation is documented
+separately in the [control formulation](docs/control_formulation.md).
 
 Run the dependency-free supervisor tests with:
 
@@ -93,40 +101,17 @@ Run the dependency-free supervisor tests with:
 python3 -m unittest discover -s tests -v
 ```
 
-## Skills Demonstrated
+## Technical Scope
 
-- Robust model predictive control
-- Local LQR feedback design
-- Hybrid control architecture
-- Constraint-aware control logic
-- Recovery behavior outside a nominal model region
-- Simulation-based controller evaluation
-- Python implementation of control architecture
-- Safety-oriented controller design
+**Control:** finite-model robust MPC, LQR, hybrid supervisory control, online
+actuator-effectiveness estimation, and constrained touchdown control.
 
-## Repository Structure
+**Implementation:** Python, CVXPY/OSQP, simulation-based validation, failure
+analysis, and testable policy interfaces.
 
-```text
-.
-├── README.md
-├── DISCLAIMER.md
-├── assets/
-│   ├── architecture_sanitized.png
-│   └── before_after_sanitized.png
-├── docs/
-│   └── control_formulation.md
-├── src/
-│   └── hybrid_landing_supervisor_reference.py
-└── tests/
-    └── test_hybrid_landing_supervisor.py
-```
+## Scope
 
-## Limitations
-
-This was a simulator project, not a flight-certified control system.
-
-The public version omits the simulator, exact validation cases, controller constants, model matrices, assignment files, and runnable submission code. The reported behavior should be understood as evidence from a controlled simulation study, not as a formal guarantee for a physical vehicle.
-
-## Disclaimer
-
-This repository is intended for portfolio review only. It does not contain the submitted controller and cannot be used as a drop-in solution for the original course project.
+This was a simulator study, not a flight-certified control system. The public
+repository intentionally omits the simulator, exact validation cases,
+controller constants, model matrices, and runnable submission code; see the
+[disclosure boundary](DISCLAIMER.md).
