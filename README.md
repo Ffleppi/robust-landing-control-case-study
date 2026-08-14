@@ -1,10 +1,17 @@
 # Robust Landing Control Under Actuator Uncertainty
 
-Sanitized public case study of a university rocket-landing control project.
+I designed and evaluated a hybrid landing controller for a simulated rocket
+subject to actuator degradation, mass uncertainty, and off-nominal approach
+states.
 
-The original project focused on designing a controller for a simulated rocket landing task under actuator uncertainty, degraded control authority, and off-nominal approach states. This public version is not a runnable solution. It is a portfolio artifact that documents the controller architecture, design reasoning, and qualitative results while omitting course-provided material.
+The controller combines finite-model constrained MPC, ancillary LQR feedback,
+nonlinear recovery supervision, and dedicated touchdown logic. In the final
+evaluation, it achieved successful two-leg landings in all three withheld
+malfunction scenarios.
 
-Course framework code, simulator code, notebooks, assignment files, validation scripts, exact constants, scenario parameters, and runnable submission code are intentionally excluded.
+This repository is a sanitized technical case study. Course-provided software,
+exact controller constants, test scenarios, and runnable submission code are
+intentionally omitted.
 
 ## Problem
 
@@ -17,12 +24,23 @@ The main control challenge was to combine:
 - robustness against actuator and model uncertainty,
 - and careful low-altitude touchdown behavior.
 
+## My Contribution
+
+I was responsible for the controller design, implementation, tuning, and
+simulation-based evaluation. The main contributions were:
+
+- modeling actuator uncertainty with a finite set of effective input-gain models,
+- implementing a shared-input constrained MPC across those models,
+- combining MPC with local LQR correction and nonlinear recovery supervision,
+- and diagnosing the terminal drop failure that motivated the touchdown and
+  contact-settle logic.
+
 ## Controller Architecture
 
 The final design used a hybrid control architecture:
 
 - **Recovery supervision** outside the local landing corridor, where the linearized model is not reliable.
-- **Robust MPC** inside the local corridor, planning constrained actions over a finite set of plausible actuator/mass models.
+- **Robust MPC** inside the local corridor, planning constrained actions over a finite set of plausible actuator-effectiveness models.
 - **Local LQR feedback** around the predictive command, using the structure `u_k = v_k + L x_k`.
 - **Terminal touchdown logic** for low-altitude braking and contact-sensitive behavior.
 - **Contact-settle logic** after touchdown to avoid aggressive lateral or gimbal commands.
@@ -41,16 +59,15 @@ In representative malfunction cases, the baseline controller drifted away from t
 
 ![Anonymized before/after result](assets/before_after_sanitized.png)
 
-## Evaluation Outcome
+## Evaluation
 
-In the final project evaluation across 191 student submissions, the controller
-received full benchmark credit: all three withheld malfunction scenarios were
-classified as successful two-leg landings. Among the 124 full-credit submissions
-with two-leg landings in all three scenarios, this was the fastest notebook run
-in the published grading data at about 8.3 seconds.
+**Achieved two-leg landings in all three withheld malfunction tests, with the
+fastest end-to-end evaluation among 124 submissions achieving the same
+full-credit outcome.**
 
-This is empirical validation on the project benchmark, not a formal guarantee of
-global robustness for all nonlinear landing states.
+End-to-end evaluation refers to execution of the complete evaluation notebook,
+not an individual MPC solve. This is empirical validation on the project
+benchmark, not a global robustness guarantee for all nonlinear landing states.
 
 ## What I Implemented
 
