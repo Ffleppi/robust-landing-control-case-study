@@ -29,7 +29,7 @@ and receives the same input sequence, but predicts a different trajectory:
 $$
 x_{j+1}^{(s)} =
 A_d x_j^{(s)} +
-B_d\operatorname{diag}(\eta^{(s)})
+B_d\,\mathrm{diag}(\eta^{(s)})
 \left(v_j-\bar{u}^{(s)}\right),
 \qquad s\in\mathcal S.
 $$
@@ -76,9 +76,9 @@ The implemented action can be summarized as
 
 $$
 u_k =
-\operatorname{sat}\!\left(
+\mathrm{sat}\!\left(
 v_0^\star +
-\alpha\,\operatorname{clip}\!\left(
+\alpha\,\mathrm{clip}\!\left(
 u_{\mathrm{LQR}}(x_k,v_0^\star)-\hat{u}_{\mathrm{hover}}
 \right)
 \right).
