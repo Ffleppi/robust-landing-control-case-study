@@ -58,10 +58,12 @@ The final design used a hybrid control architecture:
 ## Evaluation
 
 **Achieved two-leg landings in all three withheld malfunction tests, with the
-fastest end-to-end evaluation among 191 submissions.**
+fastest end-to-end evaluation among the 124 full-credit submissions, from 191
+submissions overall.**
 
 End-to-end evaluation refers to execution of the complete evaluation notebook,
-not an individual MPC solve.
+not an individual MPC solve. This is empirical project-benchmark evidence, not
+a global robustness guarantee.
 
 ## Recorded Controller Output
 
