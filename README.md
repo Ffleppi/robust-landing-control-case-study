@@ -69,29 +69,28 @@ End-to-end evaluation refers to execution of the complete evaluation notebook,
 not an individual MPC solve. This is empirical validation on the project
 benchmark, not a global robustness guarantee for all nonlinear landing states.
 
-## What I Implemented
+## Public Architecture Reference
 
-The public reference implementation is here:
-
-```text
-src/hybrid_landing_controller_reference.py
-```
-
-It is a rewritten, non-runnable architecture reference. It shows the structure of the controller without using course APIs, exact thresholds, exact model matrices, validation cases, or submitted class/function names.
-
-The implementation illustrates:
+The executable
+[supervisor reference](src/hybrid_landing_supervisor_reference.py) demonstrates
+the software boundary around the controller. It implements:
 
 - mode selection between recovery, local MPC, terminal, and contact-settle behavior,
-- robust MPC over a finite model set,
-- clipped LQR-style correction around the planned input,
-- actuator saturation and command smoothing,
-- terminal touchdown readiness checks,
-- and post-contact command suppression.
+- hysteresis before the local predictive policy receives control authority,
+- fallback when the predictive policy cannot provide a valid command,
+- persistent touchdown commitment and post-contact command suppression,
+- and normalized actuator saturation.
 
-For a higher-level explanation of the control formulation, see:
+Recovery, MPC/LQR, and terminal policies are injected through generic
+interfaces. The reference therefore tests the hybrid architecture without
+reproducing the course simulator, optimization problem, controller gains, or
+submitted APIs. The actual MPC design is documented separately in the
+[control formulation](docs/control_formulation.md).
 
-```text
-docs/control_formulation.md
+Run the dependency-free supervisor tests with:
+
+```bash
+python3 -m unittest discover -s tests -v
 ```
 
 ## Skills Demonstrated
@@ -116,8 +115,10 @@ docs/control_formulation.md
 │   └── before_after_sanitized.png
 ├── docs/
 │   └── control_formulation.md
-└── src/
-    └── hybrid_landing_controller_reference.py
+├── src/
+│   └── hybrid_landing_supervisor_reference.py
+└── tests/
+    └── test_hybrid_landing_supervisor.py
 ```
 
 ## Limitations

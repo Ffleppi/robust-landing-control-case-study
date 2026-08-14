@@ -2,9 +2,11 @@
 
 This repository is a sanitized portfolio artifact.
 
-Any source code included here is a rewritten explanatory reference. It is not
-the submitted controller, does not use the original simulator API, and is not
-intended to reproduce graded results.
+The included source code is an executable reference for generic supervision
+logic. Recovery, predictive, and terminal control laws are supplied through
+interfaces rather than reproduced. The reference is not the submitted
+controller, does not use the original simulator API, and is not intended to
+reproduce graded results.
 
 It intentionally omits:
 
