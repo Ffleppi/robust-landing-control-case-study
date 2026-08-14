@@ -1,24 +1,13 @@
 # Control Formulation
 
-This note describes the public, sanitized controller structure. It is not the
-original submission and cannot be run in the course simulator.
+This note records the sanitized control structure. Exact models, constants, and
+simulator interfaces are omitted.
 
 ## State And Input
 
-The controller works with a reduced landing state containing:
-
-- lateral and vertical error to the target,
-- lateral and vertical velocity,
-- attitude error and angular rate,
-- a contact flag near touchdown.
-
-The input is represented generically as:
-
-- main thrust,
-- lateral correction,
-- thrust-vector or gimbal correction.
-
-Exact state ordering, actuator limits, and simulator conventions are omitted.
+The reduced state contains target-relative position and velocity, attitude and
+angular rate, and contact state. Inputs represent main thrust, lateral thrust,
+and gimbal correction.
 
 ## Finite-Model Robust MPC
 
@@ -56,21 +45,17 @@ $$
 subject to the actuator limits and selected vertical-speed and attitude
 constraints holding for every scenario.
 
-The shared input sequence prevents the optimizer from selecting a different
-solution for each assumed actuator condition. The input-change penalty reduces
-command chatter, while the scenario constraints require the planned trajectory
-to remain acceptable across the complete finite model set.
+Every model receives the same input sequence and must satisfy the selected
+constraints. Input and input-change penalties limit effort and chatter. The
+first input is applied before replanning at the next sample.
 
-The local model and nominal hover input are rebuilt using the current vehicle
-mass. Online actuator-effectiveness estimates subsequently adapt the hover trim
-and available actuator bounds. The first optimized input is applied before the
-problem is solved again, giving the controller its receding-horizon behavior.
+The local model and hover input use the current vehicle mass. Online
+effectiveness estimates adjust hover trim and actuator bounds.
 
 ## Ancillary LQR Feedback
 
-A discrete LQR gain is computed from the same local linear model by solving the
-discrete algebraic Riccati equation. It is only used inside a tighter local
-envelope where linear feedback is credible.
+A discrete LQR gain from the local model is used only inside a tighter envelope
+where linear feedback is credible.
 
 The implemented action can be summarized as
 
@@ -84,26 +69,15 @@ u_{\mathrm{LQR}}(x_k,v_0^\star)-\hat{u}_{\mathrm{hover}}
 \right).
 $$
 
-The MPC input $v_0^\star$ therefore remains the main command. The LQR supplies
-only a bounded local correction and cannot take over the gross trajectory.
-
-This follows the feedback-MPC idea $u_k=v_k+Lx_k$, but it is not tube MPC: the
-submitted implementation does not propagate a robust invariant error tube. The
-robustness mechanism is the shared-input finite-model MPC combined with the
-hybrid supervisor.
+The MPC input remains the main command; LQR supplies only a bounded correction.
+This follows $u_k=v_k+Lx_k$ but is not tube MPC: no invariant error tube is
+propagated.
 
 ## Supervisor
 
-The supervisor decides whether the linear model is credible:
-
-- far from the landing corridor: use recovery control,
-- inside the corridor: use robust MPC plus local feedback,
-- near the deck: use terminal touchdown logic,
-- after contact: suppress aggressive lateral/gimbal commands.
-
-The terminal layer is important because low-altitude contact behavior is not
-well represented by a linear hover model. It prevents early shutdown while the
-vehicle still has too much lateral, vertical, or attitude error.
+The supervisor uses recovery outside the local corridor, MPC plus LQR inside
+it, terminal logic near the deck, and bounded settling after contact. This keeps
+the linear model away from large-error and contact-dominated regimes.
 
 ## Public Scope
 

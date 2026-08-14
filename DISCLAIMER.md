@@ -1,22 +1,9 @@
 # Disclaimer
 
-This repository is a sanitized portfolio artifact.
+This is a sanitized portfolio artifact, not the submitted controller. The
+included code exercises generic supervision logic through injected policies and
+does not use the original simulator API or reproduce graded results.
 
-The included source code is an executable reference for generic supervision
-logic. Recovery, predictive, and terminal control laws are supplied through
-interfaces rather than reproduced. The reference is not the submitted
-controller, does not use the original simulator API, and is not intended to
-reproduce graded results.
-
-It intentionally omits:
-
-- course-provided simulator code
-- assignment notebooks or PDFs
-- runnable submission code
-- exact controller constants
-- exact test scenarios
-- validation scripts that reproduce the graded solution
-
-The goal is to communicate the engineering approach at a high level without
-redistributing material that may belong to a course or enabling reuse as a future
-assignment solution.
+Course materials, simulator code, notebooks, exact models and constants, test
+scenarios, validation scripts, and runnable submission code are omitted to
+prevent redistribution or reuse as an assignment solution.

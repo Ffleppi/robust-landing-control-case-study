@@ -1,16 +1,7 @@
-"""Executable, simulator-independent reference for the hybrid supervisor.
+"""Simulator-independent reference for the hybrid landing supervisor.
 
-This module documents the software boundary around the landing policies without
-reproducing the submitted controller. Recovery, predictive, terminal, and
-contact-settle control are injected behind small interfaces. The public code
-owns only mode selection, hysteresis, touchdown commitment, fallback behavior,
-and normalized actuator saturation.
-
-The touchdown gate is a generic representation of terminal commitment. Its
-scenario-specific triggering conditions are intentionally omitted.
-
-No course APIs, model matrices, optimizer setup, controller gains, or validation
-scenarios appear here.
+Control policies are injected; models, gains, and scenario thresholds are
+intentionally omitted.
 """
 
 from __future__ import annotations
@@ -31,11 +22,7 @@ class Mode(Enum):
 
 @dataclass(frozen=True)
 class LandingState:
-    """Reduced state used at the public supervisor boundary.
-
-    Positions and velocities are errors relative to the landing target. A real
-    integration would map estimator or simulator output into this representation.
-    """
+    """Target-relative state used by the supervisor."""
 
     lateral_error: float
     vertical_error: float
@@ -66,11 +53,7 @@ class LandingCommand:
 
 @dataclass(frozen=True)
 class SupervisorConfig:
-    """Generic mode-transition limits supplied by an integration.
-
-    The public reference deliberately provides no defaults: callers must choose
-    values that match their own vehicle model, units, and safety analysis.
-    """
+    """Mode-transition limits, with no vehicle-specific defaults."""
 
     local_lateral_error_limit: float
     local_lateral_speed_limit: float
@@ -134,16 +117,10 @@ class PolicyUnavailable(RuntimeError):
 
 
 class HybridLandingSupervisor:
-    """Coordinate independently supplied landing policies.
+    """Select recovery, local, terminal, or contact-settle control.
 
-    Recovery handles states outside the local model region. Consecutive
-    eligible samples are required before the local predictive policy receives
-    authority. Low-altitude terminal logic has priority over both flight modes,
-    and detected contact hands authority to a constrained settle policy.
-
-    A local policy can raise :class:`PolicyUnavailable` to represent solver
-    failure or an invalid solution. The supervisor then returns immediately to
-    recovery rather than propagating an unusable action.
+    Local control requires consecutive eligible samples and falls back to
+    recovery when its policy is unavailable.
     """
 
     def __init__(
